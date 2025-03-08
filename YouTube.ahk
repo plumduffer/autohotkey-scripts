@@ -3,27 +3,30 @@
 #MaxThreadsPerHotkey 1
 SetTitleMatchMode 2
 
-HotIfWinExist "- YouTube"
-    Media_Next::
-    {
-        Try {
-            ControlFocus "Chrome_RenderWidgetHostHWND1", "- YouTube"
-            ControlSend "l", "Chrome_RenderWidgetHostHWND1", "- YouTube"
-        }
-        Catch {
-            Send "{Media_Next}"  ; Pass through if we can't control YouTube
+; Increase the hotkey threshold to avoid the warning
+#HotIf WinExist("- YouTube")
+    Media_Next::YouTubeControl("l")
+    Media_Prev::YouTubeControl("j")
+#HotIf
+
+; Function to handle the YouTube controls
+YouTubeControl(key) {
+    static lastTime := 0
+    currentTime := A_TickCount
+    
+    ; Add a small delay between executions (300ms)
+    if (currentTime - lastTime < 300)
+        return
+    
+    lastTime := currentTime
+    
+    Try {
+        if WinExist("- YouTube") {
+            WinActivate
+            Send key
         }
     }
-
-    Media_Prev::
-    {
-        Try {
-            ControlFocus "Chrome_RenderWidgetHostHWND1", "- YouTube"
-            ControlSend "j", "Chrome_RenderWidgetHostHWND1", "- YouTube"
-        }
-        Catch {
-            Send "{Media_Prev}"  ; Pass through if we can't control YouTube
-        }
+    Catch {
+        ; If there's an error, do nothing - don't try to pass through
     }
-
-HotIf  ; Reset the HotIf context
+}
